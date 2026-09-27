@@ -4,3 +4,8 @@ web-app/uploads/*
 daily_log_*.xlsx
 .env
 temp_*.pdf
+# Sensitive local files
+.env
+uploads/
+node_modules/
+*.xlsx

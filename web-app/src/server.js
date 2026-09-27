@@ -13,8 +13,8 @@ const PORT = process.env.PORT || 5000;
 
 // Admin Credentials
 const ADMIN_CREDENTIALS = {
-  username: process.env.ADMIN_USER || 'admin',
-  password: process.env.ADMIN_PASSWORD || 'printnepal123'
+  username: process.env.ADMIN_USER,
+  password: process.env.ADMIN_PASSWORD
 };
 
 // Ensure uploads folder exists

@@ -31,13 +31,13 @@
 
       <form onsubmit="handleLogin(event)" class="space-y-4">
         <div>
-          <label class="block text-xs font-bold mb-1">Username</label>
-          <input type="text" id="adminUser" required value="admin" class="w-full p-2.5 rounded-xl text-xs border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 focus:ring-2 focus:ring-brand-500">
-        </div>
-        <div>
-          <label class="block text-xs font-bold mb-1">Password</label>
-          <input type="password" id="adminPass" required value="printnepal123" class="w-full p-2.5 rounded-xl text-xs border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 focus:ring-2 focus:ring-brand-500">
-        </div>
+  <label class="block text-xs font-bold mb-1">Username</label>
+  <input type="text" id="adminUser" required placeholder="Enter username" class="...">
+</div>
+<div>
+  <label class="block text-xs font-bold mb-1">Password</label>
+  <input type="password" id="adminPass" required placeholder="Enter password" class="...">
+</div>
         <p id="loginError" class="text-xs text-red-500 hidden font-bold text-center"></p>
         <button type="submit" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-2.5 rounded-xl text-xs shadow-md">
           Sign In to Admin Dashboard
