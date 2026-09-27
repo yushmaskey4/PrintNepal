@@ -1,5 +1,6 @@
 node_modules/
-uploads/*.pdf
-*.xlsx
+web-app/uploads/*
+!web-app/uploads/.gitkeep
+daily_log_*.xlsx
 .env
 temp_*.pdf
