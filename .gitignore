@@ -1,0 +1,5 @@
+node_modules/
+uploads/*.pdf
+*.xlsx
+.env
+temp_*.pdf
