@@ -1,16 +1,16 @@
 const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
-const { PDFParse } = require('pdf-parse');
 const ExcelJS = require('exceljs');
 const fs = require('fs');
 const path = require('path');
+const docxConverter = require('docx-pdf');
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Ensure uploads directory exists
+// Ensure uploads folder exists
 const uploadsDir = path.join(__dirname, '../uploads');
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
@@ -18,6 +18,8 @@ if (!fs.existsSync(uploadsDir)) {
 
 app.use(cors());
 app.use(express.json());
+
+// Serve static files
 app.use('/uploads', express.static(uploadsDir));
 app.use(express.static(path.join(__dirname, '../public')));
 
@@ -32,34 +34,55 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// 1. PDF Page Count Endpoint (Native Buffer Page Counting)
+// Helper function to count PDF pages from buffer
+function countPdfPages(dataBuffer) {
+  const pdfText = dataBuffer.toString('latin1');
+  const pageMatches = pdfText.match(/\/Type\s*\/Page\b/g);
+  if (pageMatches) return pageMatches.length;
+
+  const countMatch = pdfText.match(/\/Count\s+(\d+)/);
+  if (countMatch && countMatch[1]) {
+    return parseInt(countMatch[1], 10);
+  }
+  return 1;
+}
+
+// 1. Universal Upload Endpoint (.pdf, .docx, .doc)
 app.post('/api/upload', upload.single('file'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
 
-    const dataBuffer = fs.readFileSync(req.file.path);
-    const pdfText = dataBuffer.toString('latin1');
-    
-    // Count occurrences of page object definitions in PDF binary structure
-    const pageMatches = pdfText.match(/\/Type\s*\/Page\b/g);
-    let totalPages = pageMatches ? pageMatches.length : 1;
+    let finalFilePath = `/uploads/${req.file.filename}`;
+    let finalDiskPath = req.file.path;
+    const fileExt = path.extname(req.file.originalname).toLowerCase();
 
-    // Fallback regex if pages are structured in catalog
-    if (totalPages === 0) {
-      const countMatch = pdfText.match(/\/Count\s+(\d+)/);
-      if (countMatch && countMatch[1]) {
-        totalPages = parseInt(countMatch[1], 10);
-      }
+    if (fileExt === '.docx' || fileExt === '.doc') {
+      const pdfFilename = `${Date.now()}-converted.pdf`;
+      const convertedPdfPath = path.join(uploadsDir, pdfFilename);
+
+      // Convert DOCX to PDF asynchronously
+      await new Promise((resolve, reject) => {
+        docxConverter(req.file.path, convertedPdfPath, (err, result) => {
+          if (err) reject(err);
+          else resolve(result);
+        });
+      });
+
+      finalFilePath = `/uploads/${pdfFilename}`;
+      finalDiskPath = convertedPdfPath;
     }
 
+    const pdfBuffer = fs.readFileSync(finalDiskPath);
+    const totalPages = countPdfPages(pdfBuffer);
+
     res.json({
-      filePath: `/uploads/${req.file.filename}`,
+      filePath: finalFilePath,
       fileName: req.file.originalname,
-      totalPages: totalPages || 1
+      totalPages: totalPages
     });
   } catch (err) {
-    console.error('PDF Parse Error:', err);
-    res.status(500).json({ error: 'Failed to process PDF file' });
+    console.error('Upload / Conversion Error:', err);
+    res.status(500).json({ error: 'Failed to process document file' });
   }
 });
 
