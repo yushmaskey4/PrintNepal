@@ -39,49 +39,23 @@
         </div>
 
         <!-- File Upload -->
-<div>
-  <label class="block text-xs font-bold text-gray-700 mb-1">Upload Document (PDF Only)</label>
-  <input type="file" id="fileInput" accept=".pdf" required onchange="uploadAndCalculate()" class="w-full p-2 border border-dashed border-red-400 bg-red-50 rounded-lg cursor-pointer text-sm">
-  <p id="fileStatus" class="text-xs text-gray-500 mt-1">Please save Word documents as PDF before uploading for accurate layout and pricing.</p>
-</div>
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-1">Upload Document (PDF Only)</label>
+          <input type="file" id="fileInput" accept=".pdf" required onchange="uploadAndCalculate()" class="w-full p-2 border border-dashed border-red-400 bg-red-50 rounded-lg cursor-pointer text-sm">
+          <p id="fileStatus" class="text-xs text-gray-500 mt-1">Please save Word documents as PDF before uploading for accurate layout and pricing.</p>
+        </div>
 
-        <!-- Print Settings Grid -->
-        <div class="grid grid-cols-3 gap-3">
+        <!-- Essential Print Options -->
+        <div class="grid grid-cols-2 gap-4">
           <div>
             <label class="block text-xs font-bold text-gray-700 mb-1">Copies</label>
-            <input type="number" id="copies" value="1" min="1" onchange="calculatePrice()" class="w-full p-2 border rounded-lg text-center font-bold text-sm">
+            <input type="number" id="copies" value="1" min="1" onchange="calculatePrice()" class="w-full p-2 border rounded-lg text-center font-bold text-sm bg-gray-50">
           </div>
           <div>
             <label class="block text-xs font-bold text-gray-700 mb-1">Color Mode</label>
-            <select id="colorMode" onchange="calculatePrice(); updatePreviewStyle();" class="w-full p-2 border rounded-lg text-sm font-semibold">
-              <option value="bw">B&W (NPR 3/pg)</option>
-              <option value="color">Color (NPR 10/pg)</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-gray-700 mb-1">Duplex Mode</label>
-            <select id="duplex" onchange="calculatePrice()" class="w-full p-2 border rounded-lg text-sm font-semibold">
-              <option value="false">Single Sided</option>
-              <option value="true">Double Sided</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Page Layout Settings (Margins & Paper Format) -->
-        <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs font-bold text-gray-700 mb-1">Page Margins</label>
-            <select id="marginSetting" onchange="updatePreviewStyle()" class="w-full p-2 border rounded-lg text-sm bg-white font-medium">
-              <option value="normal">Normal (1 in / 2.54 cm)</option>
-              <option value="narrow">Narrow (0.5 in / 1.27 cm)</option>
-              <option value="wide">Wide (1.5 in / 3.81 cm)</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-gray-700 mb-1">Paper Size</label>
-            <select id="paperSize" class="w-full p-2 border rounded-lg text-sm bg-white font-medium">
-              <option value="A4">A4 (Standard Campus)</option>
-              <option value="Letter">US Letter</option>
+            <select id="colorMode" onchange="calculatePrice(); updatePreviewStyle();" class="w-full p-2 border rounded-lg text-sm font-semibold bg-gray-50">
+              <option value="bw">B&W (NPR 5/pg)</option>
+              <option value="color">Color (NPR 15/pg)</option>
             </select>
           </div>
         </div>
@@ -115,9 +89,9 @@
     <!-- Live Document Preview Section -->
     <div class="md:col-span-5 bg-white rounded-xl shadow-md p-6 border border-gray-100 flex flex-col">
       <h3 class="text-lg font-bold text-gray-900 mb-1">📄 Live Document Preview</h3>
-      <p class="text-xs text-gray-500 mb-3">Adjusting margins and color modes dynamically updates the preview container.</p>
+      <p class="text-xs text-gray-500 mb-3">Live preview updates based on selected color mode.</p>
 
-      <div id="previewWrapper" class="flex-1 bg-gray-200 rounded-lg p-4 transition-all duration-300 flex items-center justify-center min-h-[380px] overflow-hidden relative border border-gray-300">
+      <div id="previewWrapper" class="flex-1 bg-gray-200 rounded-lg p-2 flex items-center justify-center min-h-[380px] overflow-hidden relative border border-gray-300">
         <p id="placeholderText" class="text-xs text-gray-400 font-medium">No document uploaded yet</p>
         <iframe id="pdfFrame" class="hidden w-full h-full min-h-[360px] bg-white shadow-lg rounded transition-all duration-300"></iframe>
       </div>
@@ -172,24 +146,12 @@
 
     function updatePreviewStyle() {
       const pdfFrame = document.getElementById('pdfFrame');
-      const previewWrapper = document.getElementById('previewWrapper');
       const colorMode = document.getElementById('colorMode').value;
-      const marginSetting = document.getElementById('marginSetting').value;
 
-      // Color filter adjustment
       if (colorMode === 'bw') {
         pdfFrame.style.filter = 'grayscale(100%) contrast(120%)';
       } else {
         pdfFrame.style.filter = 'none';
-      }
-
-      // Visual Margin Simulation via Container Padding
-      if (marginSetting === 'narrow') {
-        previewWrapper.style.padding = '8px';
-      } else if (marginSetting === 'wide') {
-        previewWrapper.style.padding = '32px';
-      } else {
-        previewWrapper.style.padding = '16px';
       }
     }
 
@@ -198,7 +160,7 @@
 
       const copies = parseInt(document.getElementById('copies').value) || 1;
       const colorMode = document.getElementById('colorMode').value;
-      const pricePerPage = colorMode === 'color' ? 10 : 3;
+      const pricePerPage = colorMode === 'color' ? 15 : 5;
 
       const totalPrice = currentUploadedData.totalPages * pricePerPage * copies;
 
@@ -218,9 +180,6 @@
         totalPages: currentUploadedData.totalPages,
         copies: parseInt(document.getElementById('copies').value),
         colorMode: document.getElementById('colorMode').value,
-        duplex: document.getElementById('duplex').value === 'true',
-        marginSetting: document.getElementById('marginSetting').value,
-        paperSize: document.getElementById('paperSize').value,
         totalPrice: parseFloat(document.getElementById('priceDisplay').innerText.replace('NPR ', ''))
       };
 

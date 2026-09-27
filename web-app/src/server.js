@@ -84,7 +84,7 @@ app.post('/api/upload', (req, res) => {
 
 // 2. Create Order Endpoint
 app.post('/api/orders', (req, res) => {
-  const { customerName, phoneNumber, filePath, fileName, totalPages, copies, colorMode, duplex, totalPrice } = req.body;
+  const { customerName, phoneNumber, filePath, fileName, totalPages, copies, colorMode, totalPrice } = req.body;
 
   const newOrder = {
     id: `PN-${orderIdCounter++}`,
@@ -95,7 +95,6 @@ app.post('/api/orders', (req, res) => {
     totalPages,
     copies,
     colorMode,
-    duplex,
     totalPrice,
     status: 'pending',
     createdAt: new Date()
@@ -111,7 +110,7 @@ app.get('/api/queue', (req, res) => {
     id: o.id,
     customerName: o.customerName,
     fileName: o.fileName,
-    specs: `${o.totalPages} Pages | ${o.copies} Copies | ${o.colorMode.toUpperCase()} | ${o.duplex ? 'Double-Sided' : 'Single-Sided'}`,
+    specs: `${o.totalPages} Pages | ${o.copies} Copies | ${o.colorMode.toUpperCase()}`,
     status: o.status
   }));
   res.json(publicQueue);
