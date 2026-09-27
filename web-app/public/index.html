@@ -97,6 +97,40 @@
       </div>
     </div>
 
+    <!-- Live Queue Section -->
+  <section id="queueSection" class="max-w-6xl mx-auto my-8 px-4">
+    <div class="bg-white rounded-xl shadow-md p-6 border border-gray-100">
+      <div class="flex justify-between items-center mb-4">
+        <div>
+          <h3 class="text-lg font-bold text-gray-900">📜 Live Print Queue</h3>
+          <p class="text-xs text-gray-500">Real-time status updates for ongoing and completed print jobs.</p>
+        </div>
+        <button onclick="fetchQueue()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold px-3 py-1.5 rounded-lg border">
+          🔄 Refresh Queue
+        </button>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs text-gray-600">
+          <thead class="bg-gray-50 text-gray-700 uppercase text-[10px] font-bold">
+            <tr>
+              <th class="p-3">Order ID</th>
+              <th class="p-3">Customer</th>
+              <th class="p-3">File Name</th>
+              <th class="p-3">Specifications</th>
+              <th class="p-3 text-center">Status</th>
+            </tr>
+          </thead>
+          <tbody id="queueTableBody">
+            <tr>
+              <td colspan="5" class="p-4 text-center text-gray-400">Loading queue status...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
   </main>
 
   <script>
@@ -200,6 +234,46 @@
         alert('❌ Failed to submit order. Check server connection.');
       }
     }
+
+    async function fetchQueue() {
+      try {
+        const res = await fetch('/api/queue');
+        const queue = await res.json();
+        const tbody = document.getElementById('queueTableBody');
+
+        if (queue.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-400">No active print orders right now.</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = queue.map(item => {
+          let statusBadge = '';
+          if (item.status === 'pending') {
+            statusBadge = `<span class="bg-yellow-100 text-yellow-800 font-bold px-2 py-1 rounded-full">⏳ Pending</span>`;
+          } else if (item.status === 'printing') {
+            statusBadge = `<span class="bg-blue-100 text-blue-800 font-bold px-2 py-1 rounded-full">🖨️ Printing</span>`;
+          } else if (item.status === 'ready') {
+            statusBadge = `<span class="bg-green-100 text-green-800 font-bold px-2 py-1 rounded-full">✅ Ready for Pickup</span>`;
+          }
+
+          return `
+            <tr class="border-b hover:bg-gray-50">
+              <td class="p-3 font-bold text-gray-900">${item.id}</td>
+              <td class="p-3 font-semibold">${item.customerName}</td>
+              <td class="p-3">${item.fileName}</td>
+              <td class="p-3">${item.specs}</td>
+              <td class="p-3 text-center">${statusBadge}</td>
+            </tr>
+          `;
+        }).join('');
+      } catch (err) {
+        console.error('Failed to fetch queue:', err);
+      }
+    }
+
+    // Auto-refresh queue every 5 seconds
+    setInterval(fetchQueue, 5000);
+    fetchQueue();
   </script>
 </body>
 </html>
