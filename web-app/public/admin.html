@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - PrintNepal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: { 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca' }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 font-sans min-h-screen">
+
+  <!-- Login Modal View -->
+  <div id="loginView" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-md w-full p-8 shadow-2xl border border-slate-200 dark:border-slate-700">
+      <div class="text-center mb-6">
+        <div class="inline-block bg-brand-600 text-white p-3 rounded-2xl text-2xl font-bold mb-2">🛡️</div>
+        <h2 class="text-xl font-bold text-slate-900 dark:text-white">Admin Portal Login</h2>
+        <p class="text-xs text-slate-500 dark:text-slate-400">Authorized operator access only</p>
+      </div>
+
+      <form onsubmit="handleLogin(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold mb-1">Username</label>
+          <input type="text" id="adminUser" required value="admin" class="w-full p-2.5 rounded-xl text-xs border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 focus:ring-2 focus:ring-brand-500">
+        </div>
+        <div>
+          <label class="block text-xs font-bold mb-1">Password</label>
+          <input type="password" id="adminPass" required value="printnepal123" class="w-full p-2.5 rounded-xl text-xs border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 focus:ring-2 focus:ring-brand-500">
+        </div>
+        <p id="loginError" class="text-xs text-red-500 hidden font-bold text-center"></p>
+        <button type="submit" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-2.5 rounded-xl text-xs shadow-md">
+          Sign In to Admin Dashboard
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Main Admin Dashboard View -->
+  <div id="dashboardView" class="hidden min-h-screen flex flex-col">
+    <header class="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-6 py-4 flex justify-between items-center">
+      <div class="flex items-center space-x-3">
+        <span class="bg-brand-600 text-white p-2 rounded-xl text-sm font-bold">🖨️</span>
+        <h1 class="font-bold text-base">PrintNepal Operator Dashboard</h1>
+      </div>
+      <div class="flex items-center gap-3">
+  <button onclick="downloadExcelLog()" class="text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg shadow-sm transition flex items-center gap-1.5">
+    <span>📊</span> Export Excel Log
+  </button>
+  <button onclick="fetchAdminOrders()" class="text-xs font-bold bg-slate-100 dark:bg-slate-700 px-3 py-1.5 rounded-lg hover:bg-slate-200">🔄 Refresh</button>
+  <button onclick="handleLogout()" class="text-xs font-bold bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 px-3 py-1.5 rounded-lg hover:bg-red-100">Logout</button>
+</div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex-grow">
+      <!-- Stats Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+        <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+          <p class="text-xs font-semibold text-slate-500">Total Orders</p>
+          <p id="statTotalOrders" class="text-2xl font-black text-brand-600 mt-1">0</p>
+        </div>
+        <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+          <p class="text-xs font-semibold text-slate-500">Pending Jobs</p>
+          <p id="statPendingOrders" class="text-2xl font-black text-amber-500 mt-1">0</p>
+        </div>
+        <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+          <p class="text-xs font-semibold text-slate-500">Revenue Generated</p>
+          <p id="statTotalRevenue" class="text-2xl font-black text-emerald-500 mt-1">NPR 0</p>
+        </div>
+      </div>
+
+      <!-- Orders Table -->
+      <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+        <h3 class="text-base font-bold mb-4">Print Orders Queue Management</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-50 dark:bg-slate-900 uppercase text-[10px] font-bold border-b border-slate-200 dark:border-slate-700">
+              <tr>
+                <th class="p-3">Order ID</th>
+                <th class="p-3">Customer</th>
+                <th class="p-3">Document</th>
+                <th class="p-3">Specs</th>
+                <th class="p-3">Total Price</th>
+                <th class="p-3 text-center">Payment Proof</th>
+                <th class="p-3 text-center">Status</th>
+                <th class="p-3 text-center">Action</th>
+              </tr>
+            </thead>
+            <tbody id="adminOrdersTable" class="divide-y divide-slate-100 dark:divide-slate-700">
+              <tr><td colspan="8" class="p-4 text-center text-slate-400">Loading orders...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Image Screenshot Preview Modal -->
+  <div id="imageModal" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-lg w-full p-4 relative border border-slate-200 dark:border-slate-700">
+      <button onclick="closeImageModal()" class="absolute top-2 right-3 text-slate-400 hover:text-slate-600 text-lg font-bold">✕</button>
+      <h4 class="font-bold text-xs mb-3">Payment Receipt Screenshot</h4>
+      <img id="modalPreviewImg" src="" alt="Receipt Proof" class="w-full h-80 object-contain bg-slate-100 dark:bg-slate-900 rounded-xl">
+    </div>
+  </div>
+
+  <script>
+    async function handleLogin(e) {
+      e.preventDefault();
+      const username = document.getElementById('adminUser').value;
+      const password = document.getElementById('adminPass').value;
+      const errorEl = document.getElementById('loginError');
+
+      try {
+        const res = await fetch('/api/admin/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          localStorage.setItem('adminToken', data.token);
+          document.getElementById('loginView').classList.add('hidden');
+          document.getElementById('dashboardView').classList.remove('hidden');
+          fetchAdminOrders();
+        } else {
+          errorEl.innerText = data.error;
+          errorEl.classList.remove('hidden');
+        }
+      } catch (err) {
+        errorEl.innerText = 'Server error during login.';
+        errorEl.classList.remove('hidden');
+      }
+    }
+
+    function handleLogout() {
+      localStorage.removeItem('adminToken');
+      location.reload();
+    }
+
+    async function fetchAdminOrders() {
+      try {
+        const res = await fetch('/api/admin/orders');
+        const orders = await res.json();
+        
+        // Update Stats
+        document.getElementById('statTotalOrders').innerText = orders.length;
+        document.getElementById('statPendingOrders').innerText = orders.filter(o => o.status === 'pending').length;
+        const rev = orders.reduce((acc, curr) => acc + (curr.totalPrice || 0), 0);
+        document.getElementById('statTotalRevenue').innerText = `NPR ${rev.toFixed(2)}`;
+
+        const tbody = document.getElementById('adminOrdersTable');
+        if (orders.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="8" class="p-4 text-center text-slate-400">No print orders submitted yet.</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = orders.map(o => {
+          const proofBtn = o.paymentProofPath 
+            ? `<button onclick="showImageModal('${o.paymentProofPath}')" class="bg-indigo-50 dark:bg-indigo-950/50 text-brand-600 dark:text-brand-300 font-bold px-2.5 py-1 rounded-lg text-[10px]">🖼️ View Proof</button>`
+            : `<span class="text-slate-400 text-[10px]">None</span>`;
+
+          return `
+            <tr>
+              <td class="p-3 font-bold">${o.id}</td>
+              <td class="p-3">${o.customerName}<br><span class="text-[10px] text-slate-400">${o.phoneNumber}</span></td>
+              <td class="p-3"><a href="${o.filePath}" target="_blank" class="text-brand-600 hover:underline font-medium">${o.fileName}</a></td>
+              <td class="p-3 text-slate-500">${o.totalPages} Pages | ${o.copies} Copies | ${o.colorMode.toUpperCase()}</td>
+              <td class="p-3 font-bold text-emerald-600">NPR ${o.totalPrice}</td>
+              <td class="p-3 text-center">${proofBtn}</td>
+              <td class="p-3 text-center"><span class="capitalize font-bold text-[10px] px-2 py-1 rounded-full bg-slate-100 dark:bg-slate-700">${o.status}</span></td>
+              <td class="p-3 text-center">
+                <button onclick="deleteOrder('${o.id}')" class="bg-red-50 text-red-600 px-2 py-1 rounded text-[10px] font-bold hover:bg-red-100">Delete</button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function deleteOrder(id) {
+      if (!confirm(`Cancel order ${id}?`)) return;
+      await fetch(`/api/admin/orders/${id}`, { method: 'DELETE' });
+      fetchAdminOrders();
+    }
+
+    function showImageModal(src) {
+      document.getElementById('modalPreviewImg').src = src;
+      document.getElementById('imageModal').classList.remove('hidden');
+    }
+
+    function closeImageModal() {
+      document.getElementById('imageModal').classList.add('hidden');
+    }
+
+    // Auto load if logged in
+    if (localStorage.getItem('adminToken')) {
+      document.getElementById('loginView').classList.add('hidden');
+      document.getElementById('dashboardView').classList.remove('hidden');
+      fetchAdminOrders();
+    }
+
+    async function downloadExcelLog() {
+  try {
+    const res = await fetch('/api/admin/download-excel');
+    if (res.status === 404) {
+      alert('⚠️ No orders have been completed and logged today yet.');
+      return;
+    }
+    
+    // Trigger file download in browser
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `PrintNepal_DailyLog_${new Date().toISOString().split('T')[0]}.xlsx`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  } catch (err) {
+    alert('❌ Failed to download Excel report.');
+  }
+}
+  </script>
+</body>
+</html>

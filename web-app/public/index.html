@@ -1,169 +1,281 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PrintNepal - Campus Print Portal</title>
+  <title>PrintNepal - Print Automation Portal</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f5f3ff',
+              100: '#ede9fe',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+            }
+          }
+        }
+      }
+    }
+  </script>
 </head>
-<body class="bg-gray-100 min-h-screen text-gray-800 font-sans">
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 transition-colors duration-200 font-sans min-h-screen flex flex-col justify-between">
 
-  <!-- Header Banner -->
-  <header class="bg-red-600 text-white shadow-md p-4 flex justify-between items-center">
-    <h1 class="text-2xl font-black tracking-wide">PRINT<span class="text-yellow-400">NEPAL</span></h1>
-    <div class="space-x-2">
-      <a href="#queueSection" class="bg-red-700 hover:bg-red-800 px-3 py-1.5 rounded-md text-sm font-semibold">📜 View Queue</a>
-      <button class="bg-yellow-500 text-gray-900 hover:bg-yellow-400 px-3 py-1.5 rounded-md text-sm font-bold">🔒 Admin Login</button>
+  <!-- Header / Navigation -->
+  <header class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-700 sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="bg-brand-600 text-white p-2 rounded-xl font-bold text-lg shadow-md">🖨️</div>
+        <div>
+          <h1 class="text-lg font-black tracking-tight text-slate-900 dark:text-white">PRINT<span class="text-brand-600 dark:text-brand-500">NEPAL</span></h1>
+          <p class="text-[10px] text-slate-500 dark:text-slate-400 -mt-1 hidden sm:block">Smart Document Hub</p>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-3">
+        <!-- Theme Toggle Button -->
+        <button id="themeToggle" onclick="toggleTheme()" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-200 text-sm flex items-center gap-1.5 transition">
+          <span id="themeIcon">🌙</span>
+          <span id="themeLabel" class="text-xs font-semibold hidden sm:inline">Dark</span>
+        </button>
+
+        <a href="/admin.html" target="_blank" class="text-xs font-bold px-3 py-2 rounded-xl bg-brand-600 text-white hover:bg-brand-700 transition">
+  🔒 Admin Login
+</a>
+
+        <a href="#queueSection" class="text-xs font-bold px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600 transition">
+          📜 Live Queue
+        </a>
+      </div>
     </div>
   </header>
 
-  <!-- Main Container -->
-  <main class="max-w-6xl mx-auto my-8 px-4 grid grid-cols-1 md:grid-cols-12 gap-6">
+  <!-- Main Grid Content -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex-grow">
+    
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
-    <!-- Upload & Configuration Form -->
-    <div class="md:col-span-7 bg-white rounded-xl shadow-md p-6 border border-gray-100">
-      <h2 class="text-xl font-bold text-gray-900 mb-1">Campus Document Print Portal</h2>
-      <p class="text-xs text-gray-500 mb-6">Upload your assignment/document, customize options, pay, and collect at the lab!</p>
-
-      <form id="printForm" onsubmit="handleOrderSubmit(event)" class="space-y-4">
-        <!-- Customer Details -->
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block text-xs font-bold text-gray-700 mb-1">Customer Name</label>
-            <input type="text" id="customerName" placeholder="e.g. Sujan Shrestha" required class="w-full p-2.5 border rounded-lg text-sm bg-gray-50 focus:ring-2 focus:ring-red-500 outline-none">
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-gray-700 mb-1">Phone Number</label>
-            <input type="tel" id="phoneNumber" placeholder="98XXXXXXXX" required class="w-full p-2.5 border rounded-lg text-sm bg-gray-50 focus:ring-2 focus:ring-red-500 outline-none">
-          </div>
+      <!-- Left Column: Order Form -->
+      <div class="lg:col-span-7 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200/80 dark:border-slate-700/60 p-6 sm:p-8">
+        <div class="border-b border-slate-100 dark:border-slate-700 pb-4 mb-6">
+          <h2 class="text-xl font-bold text-slate-900 dark:text-white">Submit Print Document</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Configure print specs, attach payment receipt, and join the automated queue.</p>
         </div>
 
-        <!-- File Upload -->
-        <div>
-          <label class="block text-xs font-bold text-gray-700 mb-1">Upload Document (PDF Only)</label>
-          <input type="file" id="fileInput" accept=".pdf" required onchange="uploadAndCalculate()" class="w-full p-2 border border-dashed border-red-400 bg-red-50 rounded-lg cursor-pointer text-sm">
-          <p id="fileStatus" class="text-xs text-gray-500 mt-1">Please save Word documents as PDF before uploading for accurate layout and pricing.</p>
-        </div>
+        <form id="printForm" onsubmit="handleOrderSubmit(event)" class="space-y-5">
+          <!-- Student Details -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Customer / Student Name *</label>
+              <input type="text" id="customerName" required placeholder="e.g. John Doe" class="w-full p-2.5 rounded-xl text-xs border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 focus:ring-2 focus:ring-brand-500 focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Phone Number *</label>
+              <input type="tel" id="phoneNumber" required placeholder="98xxxxxxxx" class="w-full p-2.5 rounded-xl text-xs border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 focus:ring-2 focus:ring-brand-500 focus:outline-none">
+            </div>
+          </div>
 
-        <!-- Essential Print Options -->
-        <div class="grid grid-cols-2 gap-4">
+          <!-- Document Upload -->
           <div>
-            <label class="block text-xs font-bold text-gray-700 mb-1">Copies</label>
-            <input type="number" id="copies" value="1" min="1" onchange="calculatePrice()" class="w-full p-2 border rounded-lg text-center font-bold text-sm bg-gray-50">
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Select Document (PDF format)</label>
+            <input type="file" id="fileInput" accept=".pdf" onchange="uploadAndCalculate()" class="w-full p-2 text-xs border border-slate-300 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-900 cursor-pointer text-slate-500 dark:text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-brand-50 file:text-brand-700 hover:file:bg-brand-100">
+            <p id="fileStatus" class="text-[11px] font-medium text-slate-500 dark:text-slate-400 mt-1">No document selected</p>
           </div>
-          <div>
-            <label class="block text-xs font-bold text-gray-700 mb-1">Color Mode</label>
-            <select id="colorMode" onchange="calculatePrice(); updatePreviewStyle();" class="w-full p-2 border rounded-lg text-sm font-semibold bg-gray-50">
-              <option value="bw">B&W (NPR 5/pg)</option>
-              <option value="color">Color (NPR 15/pg)</option>
-            </select>
-          </div>
-        </div>
 
-        <!-- Price Summary Card -->
-        <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 flex justify-between items-center">
-          <div>
-            <span class="text-xs text-gray-500 uppercase font-bold block">Total Calculated Price</span>
-            <span id="priceDisplay" class="text-2xl font-black text-red-600">NPR 0.00</span>
+          <!-- Options Grid -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Number of Copies</label>
+              <input type="number" id="copies" value="1" min="1" max="50" onchange="calculatePrice()" class="w-full p-2.5 rounded-xl text-xs border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Color Mode</label>
+              <select id="colorMode" onchange="calculatePrice()" class="w-full p-2.5 rounded-xl text-xs border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900">
+                <option value="bw">Black & White (NPR 5/pg)</option>
+                <option value="color">Full Color (NPR 15/pg)</option>
+              </select>
+            </div>
           </div>
-          <div class="text-right text-xs text-gray-500 font-medium">
-            <span id="pageCountDisplay">0 Pages</span>
-          </div>
-        </div>
 
-        <!-- Payment Method Placeholder -->
-        <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 flex justify-between items-center text-xs">
-          <div>
-            <p class="font-bold text-amber-900">Payment Method: Digital Wallet QR</p>
-            <p class="text-amber-700">Scan Operator QR Code with eSewa/Khalti at counter</p>
-          </div>
-          <button type="button" class="bg-amber-500 text-white font-bold px-3 py-1.5 rounded hover:bg-amber-600">View Operator QR</button>
-        </div>
-
-        <button type="submit" id="submitBtn" disabled class="w-full bg-red-600 hover:bg-red-700 disabled:bg-gray-300 text-white font-bold py-3 rounded-lg shadow-md transition-all">
-          Submit Order & Send to Print Queue
-        </button>
-      </form>
+          <!-- Embedded Payment Section with Direct QR & Screenshot -->
+<div class="bg-indigo-50/60 dark:bg-slate-800/80 border border-indigo-100 dark:border-slate-700 rounded-2xl p-4 sm:p-5">
+  <div class="flex flex-col sm:flex-row items-center gap-4">
+    <!-- QR Image Display -->
+    <div class="bg-white dark:bg-slate-900 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 flex-shrink-0 text-center">
+      <img src="/qr.jpeg" alt="eSewa/Khalti QR" class="w-32 h-32 object-contain rounded-lg">
+      <span class="text-[10px] font-bold text-slate-500 mt-1 block">Scan & Pay</span>
     </div>
 
-    <!-- Live Document Preview Section -->
-    <div class="md:col-span-5 bg-white rounded-xl shadow-md p-6 border border-gray-100 flex flex-col">
-      <h3 class="text-lg font-bold text-gray-900 mb-1">📄 Live Document Preview</h3>
-      <p class="text-xs text-gray-500 mb-3">Live preview updates based on selected color mode.</p>
+    <!-- Payment Upload Details -->
+    <div class="flex-grow space-y-2 w-full">
+      <h4 class="text-xs font-bold text-slate-900 dark:text-white">1. Scan & Send Payment</h4>
+      <p class="text-[11px] text-slate-500 dark:text-slate-400">Pay the calculated total via eSewa / Mobile Banking app using the QR code.</p>
+      
+      <h4 class="text-xs font-bold text-slate-900 dark:text-white pt-1">2. Attach Payment Proof</h4>
+      <input type="file" id="paymentProofInput" accept="image/*" class="w-full p-2 text-xs border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-brand-50 file:text-brand-700">
+    </div>
+  </div>
+</div>
 
-      <div id="previewWrapper" class="flex-1 bg-gray-200 rounded-lg p-2 flex items-center justify-center min-h-[380px] overflow-hidden relative border border-gray-300">
-        <p id="placeholderText" class="text-xs text-gray-400 font-medium">No document uploaded yet</p>
-        <iframe id="pdfFrame" class="hidden w-full h-full min-h-[360px] bg-white shadow-lg rounded transition-all duration-300"></iframe>
+          <!-- Price Output Banner -->
+          <div class="bg-slate-900 text-white dark:bg-slate-950 p-4 rounded-xl flex justify-between items-center">
+            <div>
+              <p class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Estimated Total</p>
+              <p id="pageCountDisplay" class="text-xs text-slate-300">0 Pages</p>
+            </div>
+            <p id="priceDisplay" class="text-2xl font-black text-brand-400">NPR 0.00</p>
+          </div>
+
+          <button type="submit" id="submitBtn" disabled class="w-full bg-brand-600 hover:bg-brand-700 disabled:bg-slate-300 dark:disabled:bg-slate-700 text-white font-bold py-3 px-4 rounded-xl text-sm transition shadow-md disabled:cursor-not-allowed">
+            Submit Order to Print Queue
+          </button>
+        </form>
       </div>
+
+      <!-- Right Column: Document Live Preview -->
+      <div class="lg:col-span-5 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200/80 dark:border-slate-700/60 p-6 flex flex-col">
+        <h3 class="text-sm font-bold text-slate-900 dark:text-white mb-1">Live Document Preview</h3>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">Preview adapts color style based on selected print settings.</p>
+
+        <div class="flex-grow bg-slate-100 dark:bg-slate-900 border border-dashed border-slate-300 dark:border-slate-700 rounded-xl overflow-hidden min-h-[350px] relative flex items-center justify-center">
+          <p id="placeholderText" class="text-xs text-slate-400 text-center px-4">Upload a PDF document to view interactive preview</p>
+          <iframe id="pdfFrame" class="w-full h-full border-0 hidden"></iframe>
+        </div>
+      </div>
+
     </div>
 
     <!-- Live Queue Section -->
-  <section id="queueSection" class="max-w-6xl mx-auto my-8 px-4">
-    <div class="bg-white rounded-xl shadow-md p-6 border border-gray-100">
-      <div class="flex justify-between items-center mb-4">
-        <div>
-          <h3 class="text-lg font-bold text-gray-900">📜 Live Print Queue</h3>
-          <p class="text-xs text-gray-500">Real-time status updates for ongoing and completed print jobs.</p>
+    <section id="queueSection" class="mt-10">
+      <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200/80 dark:border-slate-700/60 p-6">
+        <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-4 gap-2">
+          <div>
+            <h3 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <span>📜 Live Campus Print Queue</span>
+            </h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Track real-time progress of ongoing jobs across campus.</p>
+          </div>
+          <button onclick="fetchQueue()" class="self-start sm:self-auto bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-xs font-bold px-3 py-2 rounded-xl transition border border-slate-200 dark:border-slate-600">
+            🔄 Refresh Status
+          </button>
         </div>
-        <button onclick="fetchQueue()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold px-3 py-1.5 rounded-lg border">
-          🔄 Refresh Queue
-        </button>
-      </div>
 
-      <div class="overflow-x-auto">
-        <table class="w-full text-left text-xs text-gray-600">
-          <thead class="bg-gray-50 text-gray-700 uppercase text-[10px] font-bold">
-            <tr>
-              <th class="p-3">Order ID</th>
-              <th class="p-3">Customer</th>
-              <th class="p-3">File Name</th>
-              <th class="p-3">Specifications</th>
-              <th class="p-3 text-center">Status</th>
-            </tr>
-          </thead>
-          <tbody id="queueTableBody">
-            <tr>
-              <td colspan="5" class="p-4 text-center text-gray-400">Loading queue status...</td>
-            </tr>
-          </tbody>
-        </table>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs text-slate-600 dark:text-slate-300">
+            <thead class="bg-slate-50 dark:bg-slate-900/60 text-slate-700 dark:text-slate-300 uppercase text-[10px] font-bold border-b border-slate-200 dark:border-slate-700">
+              <tr>
+                <th class="p-3">Order ID</th>
+                <th class="p-3">Customer</th>
+                <th class="p-3">File Name</th>
+                <th class="p-3">Specifications</th>
+                <th class="p-3 text-center">Status</th>
+              </tr>
+            </thead>
+            <tbody id="queueTableBody" class="divide-y divide-slate-100 dark:divide-slate-700">
+              <tr>
+                <td colspan="5" class="p-4 text-center text-slate-400">Loading queue status...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
-  </section>
+    </section>
 
   </main>
+
+  <!-- Payment Modal -->
+  <div id="qrModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-sm w-full p-6 text-center shadow-xl relative border border-slate-200 dark:border-slate-700">
+      <button onclick="toggleQrModal(false)" class="absolute top-3 right-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-lg font-bold">✕</button>
+      <h3 class="text-base font-bold text-slate-900 dark:text-white mb-1">Counter Payment QR</h3>
+      <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">Scan with eSewa, Khalti, or Mobile Banking app</p>
+      
+      <div class="bg-slate-50 dark:bg-slate-900 p-4 rounded-xl border border-dashed border-slate-300 dark:border-slate-700 flex items-center justify-center my-2">
+        <img src="/qr.jpeg" alt="Payment QR Code" class="w-48 h-48 object-contain rounded-lg shadow-sm">
+      </div>
+      <p class="text-[11px] font-semibold text-slate-500 dark:text-slate-400 mt-3">Upload your payment screenshot before submitting the order.</p>
+    </div>
+  </div>
+
+  <footer class="py-4 text-center text-xs text-slate-400 border-t border-slate-200 dark:border-slate-800">
+    © 2026 PrintNepal Portal • All Rights Reserved
+  </footer>
 
   <script>
     let currentUploadedData = null;
 
+    // Theme Switcher Logic
+    function toggleTheme() {
+      const htmlElement = document.documentElement;
+      const isDark = htmlElement.classList.contains('dark');
+      
+      if (isDark) {
+        htmlElement.classList.remove('dark');
+        localStorage.setItem('theme', 'light');
+        document.getElementById('themeIcon').innerText = '🌙';
+        document.getElementById('themeLabel').innerText = 'Dark';
+      } else {
+        htmlElement.classList.add('dark');
+        localStorage.setItem('theme', 'dark');
+        document.getElementById('themeIcon').innerText = '☀️';
+        document.getElementById('themeLabel').innerText = 'Light';
+      }
+    }
+
+    // Initialize saved theme preference
+    if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+      document.getElementById('themeIcon').innerText = '☀️';
+      document.getElementById('themeLabel').innerText = 'Light';
+    }
+
+    // Modal controller
+    function toggleQrModal(show) {
+      const modal = document.getElementById('qrModal');
+      if (show) modal.classList.remove('hidden');
+      else modal.classList.add('hidden');
+    }
+
+    // File Upload & Page Calculation
     async function uploadAndCalculate() {
       const fileInput = document.getElementById('fileInput');
+      const paymentInput = document.getElementById('paymentProofInput');
+
       if (!fileInput.files[0]) return;
 
       const formData = new FormData();
-      formData.append('file', fileInput.files[0]);
+      formData.append('document', fileInput.files[0]);
+      if (paymentInput.files[0]) {
+        formData.append('paymentProof', paymentInput.files[0]);
+      }
 
-      document.getElementById('fileStatus').innerText = 'Uploading and processing document...';
+      document.getElementById('fileStatus').innerText = 'Analyzing document details...';
 
       try {
-        const res = await fetch('/api/upload', { method: 'POST', body: formData });
+        const res = await fetch('/api/upload-with-payment', { method: 'POST', body: formData });
         const data = await res.json();
 
         if (data.error) {
-          document.getElementById('fileStatus').innerText = '❌ Failed to process file.';
+          document.getElementById('fileStatus').innerText = '❌ Error: ' + data.error;
           return;
         }
 
         currentUploadedData = {
           filePath: data.filePath,
           fileName: data.fileName,
-          totalPages: parseInt(data.totalPages) || 1
+          totalPages: parseInt(data.totalPages) || 1,
+          paymentProofPath: data.paymentProofPath
         };
 
-        document.getElementById('fileStatus').innerText = `✓ File loaded: ${data.fileName} (${currentUploadedData.totalPages} pages)`;
+        document.getElementById('fileStatus').innerText = `✓ File Loaded: ${data.fileName} (${currentUploadedData.totalPages} pages)`;
         document.getElementById('submitBtn').disabled = false;
         
-        // Show Document Preview
+        // Show Preview
         const pdfFrame = document.getElementById('pdfFrame');
         const placeholderText = document.getElementById('placeholderText');
         
@@ -174,37 +286,54 @@
         updatePreviewStyle();
         calculatePrice();
       } catch (err) {
-        document.getElementById('fileStatus').innerText = '❌ Error uploading file.';
+        document.getElementById('fileStatus').innerText = '❌ Server upload error';
       }
     }
 
-    function updatePreviewStyle() {
-      const pdfFrame = document.getElementById('pdfFrame');
-      const colorMode = document.getElementById('colorMode').value;
-
-      if (colorMode === 'bw') {
-        pdfFrame.style.filter = 'grayscale(100%) contrast(120%)';
-      } else {
-        pdfFrame.style.filter = 'none';
-      }
-    }
-
+    // Dynamic Price Calculation
     function calculatePrice() {
       if (!currentUploadedData) return;
 
       const copies = parseInt(document.getElementById('copies').value) || 1;
       const colorMode = document.getElementById('colorMode').value;
-      const pricePerPage = colorMode === 'color' ? 15 : 5;
+      const ratePerPage = colorMode === 'color' ? 15 : 5;
 
-      const totalPrice = currentUploadedData.totalPages * pricePerPage * copies;
-
-      document.getElementById('priceDisplay').innerText = `NPR ${totalPrice.toFixed(2)}`;
-      document.getElementById('pageCountDisplay').innerText = `${currentUploadedData.totalPages} Pages × ${copies} Copy(ies)`;
+      const total = currentUploadedData.totalPages * copies * ratePerPage;
+      
+      document.getElementById('pageCountDisplay').innerText = `${currentUploadedData.totalPages} Pages x ${copies} Copies`;
+      document.getElementById('priceDisplay').innerText = `NPR ${total.toFixed(2)}`;
+      
+      updatePreviewStyle();
     }
 
+    // Grayscale or color filter preview rendering
+    function updatePreviewStyle() {
+      const iframe = document.getElementById('pdfFrame');
+      const colorMode = document.getElementById('colorMode').value;
+      if (colorMode === 'bw') {
+        iframe.style.filter = 'grayscale(100%)';
+      } else {
+        iframe.style.filter = 'none';
+      }
+    }
+
+    // Handle Order Submission
     async function handleOrderSubmit(e) {
       e.preventDefault();
       if (!currentUploadedData) return;
+
+      const paymentInput = document.getElementById('paymentProofInput');
+      
+      // If user selected payment proof after document upload, re-upload it
+      let finalPaymentPath = currentUploadedData.paymentProofPath;
+      if (paymentInput.files[0] && !finalPaymentPath) {
+        const pData = new FormData();
+        pData.append('document', document.getElementById('fileInput').files[0]);
+        pData.append('paymentProof', paymentInput.files[0]);
+        const pRes = await fetch('/api/upload-with-payment', { method: 'POST', body: pData });
+        const pJson = await pRes.json();
+        finalPaymentPath = pJson.paymentProofPath;
+      }
 
       const payload = {
         customerName: document.getElementById('customerName').value,
@@ -214,7 +343,8 @@
         totalPages: currentUploadedData.totalPages,
         copies: parseInt(document.getElementById('copies').value),
         colorMode: document.getElementById('colorMode').value,
-        totalPrice: parseFloat(document.getElementById('priceDisplay').innerText.replace('NPR ', ''))
+        totalPrice: parseFloat(document.getElementById('priceDisplay').innerText.replace('NPR ', '')),
+        paymentProofPath: finalPaymentPath
       };
 
       try {
@@ -227,14 +357,15 @@
         const data = await res.json();
 
         if (data.success) {
-          alert(`🎉 Order Submitted Successfully! Your Order ID is ${data.order.id}`);
+          alert(`🎉 Order Submitted Successfully! ID: ${data.order.id}`);
           location.reload();
         }
       } catch (err) {
-        alert('❌ Failed to submit order. Check server connection.');
+        alert('❌ Failed to submit order.');
       }
     }
 
+    // Fetch Live Queue Status Table
     async function fetchQueue() {
       try {
         const res = await fetch('/api/queue');
@@ -242,36 +373,36 @@
         const tbody = document.getElementById('queueTableBody');
 
         if (queue.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-400">No active print orders right now.</td></tr>`;
+          tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">No active print orders at the moment.</td></tr>`;
           return;
         }
 
         tbody.innerHTML = queue.map(item => {
           let statusBadge = '';
           if (item.status === 'pending') {
-            statusBadge = `<span class="bg-yellow-100 text-yellow-800 font-bold px-2 py-1 rounded-full">⏳ Pending</span>`;
+            statusBadge = `<span class="bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 font-bold px-2.5 py-1 rounded-full text-[10px]">⏳ Pending</span>`;
           } else if (item.status === 'printing') {
-            statusBadge = `<span class="bg-blue-100 text-blue-800 font-bold px-2 py-1 rounded-full">🖨️ Printing</span>`;
+            statusBadge = `<span class="bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300 font-bold px-2.5 py-1 rounded-full text-[10px]">🖨️ Printing</span>`;
           } else if (item.status === 'ready') {
-            statusBadge = `<span class="bg-green-100 text-green-800 font-bold px-2 py-1 rounded-full">✅ Ready for Pickup</span>`;
+            statusBadge = `<span class="bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 font-bold px-2.5 py-1 rounded-full text-[10px]">✅ Ready</span>`;
           }
 
           return `
-            <tr class="border-b hover:bg-gray-50">
-              <td class="p-3 font-bold text-gray-900">${item.id}</td>
+            <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-700/30">
+              <td class="p-3 font-bold text-slate-900 dark:text-white">${item.id}</td>
               <td class="p-3 font-semibold">${item.customerName}</td>
               <td class="p-3">${item.fileName}</td>
-              <td class="p-3">${item.specs}</td>
+              <td class="p-3 text-slate-500 dark:text-slate-400">${item.specs}</td>
               <td class="p-3 text-center">${statusBadge}</td>
             </tr>
           `;
         }).join('');
       } catch (err) {
-        console.error('Failed to fetch queue:', err);
+        console.error('Failed to fetch queue status:', err);
       }
     }
 
-    // Auto-refresh queue every 5 seconds
+    // Auto Refresh Queue every 5 Seconds
     setInterval(fetchQueue, 5000);
     fetchQueue();
   </script>
