@@ -4,7 +4,6 @@ const multer = require('multer');
 const ExcelJS = require('exceljs');
 const fs = require('fs');
 const path = require('path');
-const docxConverter = require('docx-pdf');
 require('dotenv').config();
 
 const app = express();
@@ -27,14 +26,24 @@ app.use(express.static(path.join(__dirname, '../public')));
 let orders = [];
 let orderIdCounter = 101;
 
-// Multer storage setup
+// Multer configuration: restrict to PDF files only
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, uploadsDir),
   filename: (req, file, cb) => cb(null, `${Date.now()}-${file.originalname}`)
 });
-const upload = multer({ storage });
 
-// Helper function to count PDF pages from buffer
+const upload = multer({
+  storage,
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === 'application/pdf' || path.extname(file.originalname).toLowerCase() === '.pdf') {
+      cb(null, true);
+    } else {
+      cb(new Error('Only PDF documents are allowed!'));
+    }
+  }
+});
+
+// Native buffer page counter
 function countPdfPages(dataBuffer) {
   const pdfText = dataBuffer.toString('latin1');
   const pageMatches = pdfText.match(/\/Type\s*\/Page\b/g);
@@ -47,43 +56,30 @@ function countPdfPages(dataBuffer) {
   return 1;
 }
 
-// 1. Universal Upload Endpoint (.pdf, .docx, .doc)
-app.post('/api/upload', upload.single('file'), async (req, res) => {
-  try {
-    if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
-
-    let finalFilePath = `/uploads/${req.file.filename}`;
-    let finalDiskPath = req.file.path;
-    const fileExt = path.extname(req.file.originalname).toLowerCase();
-
-    if (fileExt === '.docx' || fileExt === '.doc') {
-      const pdfFilename = `${Date.now()}-converted.pdf`;
-      const convertedPdfPath = path.join(uploadsDir, pdfFilename);
-
-      // Convert DOCX to PDF asynchronously
-      await new Promise((resolve, reject) => {
-        docxConverter(req.file.path, convertedPdfPath, (err, result) => {
-          if (err) reject(err);
-          else resolve(result);
-        });
-      });
-
-      finalFilePath = `/uploads/${pdfFilename}`;
-      finalDiskPath = convertedPdfPath;
+// 1. PDF Upload Endpoint
+app.post('/api/upload', (req, res) => {
+  upload.single('file')(req, res, (err) => {
+    if (err) {
+      return res.status(400).json({ error: err.message || 'Invalid file format' });
+    }
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
     }
 
-    const pdfBuffer = fs.readFileSync(finalDiskPath);
-    const totalPages = countPdfPages(pdfBuffer);
+    try {
+      const pdfBuffer = fs.readFileSync(req.file.path);
+      const totalPages = countPdfPages(pdfBuffer);
 
-    res.json({
-      filePath: finalFilePath,
-      fileName: req.file.originalname,
-      totalPages: totalPages
-    });
-  } catch (err) {
-    console.error('Upload / Conversion Error:', err);
-    res.status(500).json({ error: 'Failed to process document file' });
-  }
+      res.json({
+        filePath: `/uploads/${req.file.filename}`,
+        fileName: req.file.originalname,
+        totalPages: totalPages
+      });
+    } catch (parseErr) {
+      console.error('PDF Parse Error:', parseErr);
+      res.status(500).json({ error: 'Failed to read PDF pages' });
+    }
+  });
 });
 
 // 2. Create Order Endpoint
